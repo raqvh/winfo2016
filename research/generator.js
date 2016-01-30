@@ -4,6 +4,7 @@
     window.onload = function () {
         var generate = document.getElementById("gen");
         generate.onclick = test;
+        document.getElementById("file_input").onchange = uploadText;
     };
 
     function test() {
@@ -17,42 +18,51 @@
 				getArticles(output.result);
 				document.getElementById("summary").innerHTML = output.result;
 			});
-		// client.algo("algo://demo/Hello/0.1.1")
-  //     	.pipe(input)
-  //     	.then(function(output) {
-  //       	document.getElementById("summary").innerHTML = output.result;
-  //    	 });
     }
 
-    function getArticles(tags) {
-    	for(var i = 0; i < tags.length; i++) {
-    		console.log(tags[i]);
-    	}
+    function uploadText() {
+		var file = document.getElementById("file_input").value;
+		var reader = new FileReader();
+		reader.readAsText(file.value);
+		document.getElementById("input_text").innerHTML = reader.result;
+	}
 
-    	var input = {"search": "Great Filter"};
-		Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+    function getArticles(tags) {
+    	clear();
+    	var links = document.getElementById("links");
+    	var list = document.createElement("ul");
+    	list.id = "linklist";
+    	list.className = "list-group";
+    	for(var i = 0; i < 5; i++) {
+    		console.log(tags[i]);
+
+
+    		var input = {"search": tags[i]};
+			Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
            .algo("algo://web/WikipediaParser/0.1.0")
            .pipe(input)
            .then(function(output) {
              console.log(output.result[0]);
-             var links = document.getElementById("links");
-             var list = document.createElement("ul");
-             list.className = "list-group";
-             for(var i = 0; i < 5; i++) {
+             
+             
+             
+           //  for(var i = 0; i < 5; i++) {
              	//console.log("hi" + i);
              	var element = document.createElement("li");
-             	var wikiLink = "https://en.wikipedia.org/wiki/" + output.result[i].replace(" ", "_");
+             	var wikiLink = "https://en.wikipedia.org/wiki/" + output.result[0].replace(" ", "_");
              	var newLink = document.createElement("a");
              	newLink.href = wikiLink;
              	newLink.target = "_blank";
              	element.appendChild(newLink);
-             	newLink.innerHTML = output.result[i];
+             	newLink.innerHTML = output.result[0];
              	element.className = "list-group-item";
              	list.appendChild(element);
-             	console.log(output.result[i]);
-             }
-             document.getElementById("col2").appendChild(list);
+             	console.log(output.result[0]);
+          //   }
+             
            });
+    	}
+    	document.getElementById("col2").appendChild(list);
        }
 
       // var list = document.createElement("ul");
@@ -66,6 +76,15 @@
       // }
 
       // panel.appendChild(list);
+      function clear() {
+      	var col = document.getElementById("col2");
+      	console.log(document.getElementById("linklist"));
+      	var list = document.getElementById("linklist");
+      	if(list != null) {
+      		col.removeChild(list);
+      	}
+      	document.getElementById("summary").innerHTML = "";
+      }
   
 
 }());
