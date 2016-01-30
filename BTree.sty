@@ -1,0 +1,124 @@
+% BTree Generation Package
+% 
+% (c) Adam Blank
+%
+%% This program can be redistributed and/or modified under the terms
+%% of the LaTeX Project Public License Distributed from CTAN archives
+%% in directory macros/latex/base/lppl.txt.
+% 
+\NeedsTeXFormat{LaTeX2e}[2015/07/23]
+\ProvidesPackage{BTree}[2015/07/23 v0.01 LaTeX package for generating BTrees]
+
+\RequirePackage{tikz}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\usetikzlibrary{automata}
+\usetikzlibrary{decorations.pathmorphing, decorations.text, calc}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\usetikzlibrary{graphdrawing}
+\usetikzlibrary{graphs}
+\usegdlibrary{trees,force,layered}
+\usetikzlibrary{circuits.logic.US}
+
+\RequirePackage{etoolbox}
+\RequirePackage{xstring}
+\RequirePackage{xparse}
+\RequirePackage{luatexbase}
+\RequirePackage{luacode}
+\RequireLuaModule{lualibs}
+
+\newcommand{\transbtree}{white}
+\newcommand{\backbtree}{black}
+\newcommand{\fillseq}{\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree,\backbtree,\transbtree}
+\tikzset{
+    btreenode2/.style={rectangle split, rectangle split horizontal, rectangle split parts=5, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode3/.style={rectangle split, rectangle split horizontal, rectangle split parts=7, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode4/.style={rectangle split, rectangle split horizontal, rectangle split parts=9, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode5/.style={rectangle split, rectangle split horizontal, rectangle split parts=11, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode6/.style={rectangle split, rectangle split horizontal, rectangle split parts=13, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode7/.style={rectangle split, rectangle split horizontal, rectangle split parts=15, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreenode8/.style={rectangle split, rectangle split horizontal, rectangle split parts=17, rectangle split part fill={\fillseq},
+                       rectangle split every empty part={}},
+    btreeleaf2/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=2, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf3/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=3, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf4/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=4, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf5/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=5, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf6/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=6, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf7/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=7, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+    btreeleaf8/.style={rectangle split, rectangle split horizontal=false, rectangle split parts=8, rectangle split part fill=none,
+                       rectangle split empty part height=1.5ex},
+}
+
+\newcommand{\internalsize}{XX}
+
+\begin{luacode}
+function btreenode(list, nodesize)
+    ordinals = {"two", "four", "six", "eight", "ten", "twelve", "fourteen", "sixteen", "eighteen", "twenty"}
+    local list = string.split(list, ",")
+    nodesize = tonumber(nodesize)
+    for i=1, nodesize do
+        idx = tonumber(i)
+        num = list[idx]
+
+        if num and num ~= '' then
+           num = string.gsub(list[idx],":", ",")
+        end
+        tex.sprint({"\\nodepart[fill=backbtree]{", ordinals[idx], "}", num})
+        if not num or num == '' then
+            tex.sprint({"\\phantom{X}"})
+        end
+     end
+end
+function btreeleaf(list)
+    ordinals = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
+    local list = string.split(list, ",")
+    for i,v in ipairs(list) do
+        idx = tonumber(i)
+        num = v
+        if num and num ~= '' then
+           num = string.gsub(list[idx],":", ",")
+        end
+        tex.sprint({"\\nodepart{", ordinals[idx], "}", num})
+     end
+end        
+\end{luacode}
+
+\NewDocumentCommand{\btreenode}{m}{\directlua{btreenode("#1", \internalsize)}}
+\NewDocumentCommand{\btreeleaf}{m}{\directlua{btreeleaf("#1")}}
+
+\NewDocumentCommand{\btree}{O{font=\small}O{8.0} O{8.0} D(){4} D(){3} m m}{%
+ \mbox{\begin{tikzpicture}[thick,draw=\nodecol,node distance=0.6em and 1.5em, #1]
+ \renewcommand{\internalsize}{#4}
+ \tikzset{leaf/.style={btreeleaf#5}}
+ \tikzset{internal/.style={btreenode#4}}
+ \graph [tree layout, sibling distance=#2 em+0.5em, level distance=#3em, edges={draw=none}, nodes={internal, draw,semithick,minimum height=1.5em, inner sep=0.2em}]{#6};
+ #7
+ \end{tikzpicture}
+ }}
+
+
+%%%% EXAMPLE %%%%%
+%\btree(4)(3){
+%        x/\btreenode{B,B,B,B} -> {
+%            y/\btreenode{B,B,B,B} -> {
+%                z/\btreeleaf{B, B}[leaf],
+%            },
+%        }
+% }{
+%        \path [draw, ->] (x.one) -- (y);
+%        \path [draw, ->] (y.one) -- (z);
+%}
