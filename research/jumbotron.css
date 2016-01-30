@@ -36,3 +36,6 @@ div#col1 {
 	border-right: #3e3e3e dashed 2px;
 }
 
+div.container p {
+	text-align: left;
+}
