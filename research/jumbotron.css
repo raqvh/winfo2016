@@ -48,7 +48,7 @@ div#buttons {
 	margin-bottom: 1em;
 }
 
-#buttons input {
+div#buttons input, div#buttons button {
 	margin-right: 2em;
 	text-align: center;
 }
@@ -57,6 +57,8 @@ input[type="file"] {
 	display: inline;
 }
 
-button#gen {
-	height: 100%;
+div#buttons fieldset {
+	display: inline-block;
+	width: 25%;
+	vertical-align: top;
 }
