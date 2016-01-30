@@ -32,8 +32,7 @@ body {
 
 div#col1 {
 	float: left;
-	width: 66.66%;
-	border-right: #3e3e3e dashed 2px;
+	width: 100%;
 }
 
 div.row p {
@@ -49,14 +48,15 @@ div#buttons {
 	margin-bottom: 1em;
 }
 
-div#buttons button {
+#buttons input {
 	margin-right: 2em;
-}
-
-input {
 	text-align: center;
 }
 
 input[type="file"] {
 	display: inline;
+}
+
+button#gen {
+	height: 100%;
 }
