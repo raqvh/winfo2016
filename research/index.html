@@ -78,11 +78,16 @@
     <div class="jumbotron">
       <div class="container">
         <h1>Research that!</h1>
-        <p>Enter in some text, and get some research done!</p>
+        <div>
+          <p>Enter in some text, and get some research done, or upload a file!</p>
+        </div>
         <fieldset>
           <textarea id="input_text" rows="10" cols="80"></textarea>
         </fieldset>
-        <p><button id="gen" class="btn btn-primary btn-lg" href="#" role="button">Research!</button></p>
+        <div id="buttons">
+          <button id="gen" class="btn btn-primary btn-lg" href="#" role="button">Research!</button>
+          <input id="file_but" class="btn btn-primary btn-lg" type="file" />
+        </div>
       </div>
     </div>
 

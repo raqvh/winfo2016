@@ -39,3 +39,24 @@ div#col1 {
 div.row p {
 	text-align: left;
 }
+
+div#col1 {
+	text-align: left;
+}
+
+div#buttons {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+div#buttons button {
+	margin-right: 2em;
+}
+
+input {
+	text-align: center;
+}
+
+input[type="file"] {
+	display: inline;
+}
