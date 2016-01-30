@@ -1,5 +1,7 @@
 (function() {
     "use strict";
+    //var articles = [];
+   // var summed = [];
 
     window.onload = function () {
         var generate = document.getElementById("gen");
@@ -31,56 +33,90 @@
         reader.readAsText(event.target.files[0]);
 	}
 
-	function addLinks(tags, list, index, count, seen) {
+	function addLinks(articles, tags, index, count, seen) {
 		var input = {"search": tags[index]};
 		Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
         .algo("algo://web/WikipediaParser/0.1.0")
         .pipe(input)
         .then(function(output) {
-        var j = 0;
+        	var j = 0;
 	        for(var i = 0; i < count; i++) {
-	        	if(seen.indexOf(output.result[j]) === -1 && output.result[j].indexOf("disambiguation") === -1) {
-		            var element = document.createElement("li");
-		            var wikiLink = "https://en.wikipedia.org/wiki/" + output.result[j].replace(" ", "_");
-		            var newLink = document.createElement("a");
-		            newLink.href = wikiLink;
-		            newLink.target = "_blank";
-		            element.appendChild(newLink);
-		            newLink.innerHTML = output.result[j];
-		            element.className = "list-group-item";
-		            list.appendChild(element);
-		            seen.push(output.result[j]);
+	        	var name = output.result[j];
+	        	//var summary = "";
+	        	if(seen.indexOf(name) === -1 && name.indexOf("disambiguation") === -1) {
+	        		
+	        		console.log(name + "addding");
+			        articles.push(name);
+			        seen.push(name);
 	        	} else {
 	        		i -= 1;
 	        	}
 	        	j++;
 	        }
         });
+
+
 	}
 
     function getArticles(tags) {
-    	clear();
-    	var links = document.getElementById("links");
+    	//clear();
+    	var seen = [];
+    	var articles = [];
+
+    	console.log("hi");
+    	addLinks(articles, tags, 0, 2, seen);
+    	addLinks(articles, tags, 1, 2, seen);
+    	addLinks(articles, tags, 2, 1, seen);
+    	addLinks(articles, tags, 3, 1, seen);
+    	console.log(articles);
+    	genHTML(articles);
+    	console.log("end");
+    	
+       }
+
+
+    function genHTML(articles) {
+		console.log(articles);
+		var links = document.getElementById("links");
     	var list = document.createElement("ul");
     	list.id = "linklist";
     	list.className = "list-group";
-    	var seen = [];
 
-    	console.log("hi");
-    	addLinks(tags, list, 0, 2, seen);
-    	addLinks(tags, list, 1, 2, seen);
-    	addLinks(tags, list, 2, 1, seen);
-    	addLinks(tags, list, 3, 1, seen);
-    	console.log("end");
+		for(var i = 0; i < articles.length; i++) {
+			console.log(i);
+			var name = articles[i];
+			var article = {"articleName": name};
+			Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+	        .algo("algo://web/WikipediaParser/0.1.0")
+	        .pipe(article)
+	        .then(function(finish) {
+	        	//console.log(finish.result.summary);
+	        	var summary = finish.result.summary;
+	        	console.log(summary);
+		        var paragraph = document.createElement("p");
+		        paragraph.innerHTML = summary;
+		        var element = document.createElement("li");
+		        var wikiLink = "https://en.wikipedia.org/wiki/" + name.replace(" ", "_");
+		        var newLink = document.createElement("a");
+		        newLink.href = wikiLink;
+		        newLink.target = "_blank";
+		        element.appendChild(newLink);
+		        newLink.innerHTML = name;
+		        element.className = "list-group-item";
+		        element.appendChild(paragraph);
+		        list.appendChild(element);
+	        });
 
-		document.getElementById("col2").appendChild(list);
-    	
-       }
-       
+   		}
+
+   		document.getElementById("col1").appendChild(list);
+	}
+
       function clear() {
-      	var col = document.getElementById("col2");
+      	var col = document.getElementById("col1");
       	console.log(document.getElementById("linklist"));
       	var list = document.getElementById("linklist");
+     // 	articles = [];
       	if(list !== null) {
       		col.removeChild(list);
       	}
