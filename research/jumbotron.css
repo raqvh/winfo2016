@@ -43,7 +43,20 @@ div#col1 {
 	text-align: left;
 }
 
-div#buttons {
+div#file_buttons, div#research_button {
+	display: inline-block;
+	vertical-align: top;
+}
+
+div#research_button {
+	margin-left: 30px;
+}
+
+div#user {
+	text-align: center;
+}
+
+/*div#buttons {
 	margin-top: 1em;
 	margin-bottom: 1em;
 }
@@ -61,4 +74,4 @@ div#buttons fieldset {
 	display: inline-block;
 	width: 25%;
 	vertical-align: top;
-}
+}*/
