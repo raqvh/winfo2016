@@ -1,0 +1,38 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+.container {
+	text-align: center;
+}
+
+.navbar-default {
+	background-color: #3e3e3e;
+	color: #fefefe;
+}
+
+.navbar-default .navbar-brand {
+    color: #fefefe;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #fefefe;
+}
+
+.container p {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.col-md-4 {
+	float: left;
+}
+
+div#col1 {
+	float: left;
+	width: 66.66%;
+	border-right: #3e3e3e dashed 2px;
+}
+
