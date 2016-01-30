@@ -6,7 +6,8 @@
     window.onload = function () {
         var generate = document.getElementById("gen");
         generate.onclick = test;
-        document.getElementById("file_input").addEventListener('change', uploadText, false);
+            document.getElementById("file_input").addEventListener('change', uploadText, false);
+    document.getElementById("image_input").addEventListener('change', uploadImage, false);
     };
 
     function test() {
@@ -43,8 +44,7 @@ function uploadText(event) {
                 console.log(output);
            });
     }
-    document.getElementById("file_input").addEventListener('change', uploadText, false);
-    document.getElementById("image_input").addEventListener('change', uploadImage, false);
+
 
   function addLinks(articles, tags, index, count, seen) {
     var input = {"search": tags[index]};
@@ -75,14 +75,18 @@ function uploadText(event) {
       //clear();
       var seen = [];
       var articles = [];
-
+      var done = false;
       console.log("hi");
       addLinks(articles, tags, 0, 2, seen);
       addLinks(articles, tags, 1, 2, seen);
       addLinks(articles, tags, 2, 1, seen);
       addLinks(articles, tags, 3, 1, seen);
+      done = true; 
+
       console.log(articles);
-      genHTML(articles);
+      if(done) {
+        genHTML(articles);
+      }
       console.log("end");
       
        }
