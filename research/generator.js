@@ -1,197 +1,140 @@
 (function() {
     "use strict";
+    //var articles = [];
+   // var summed = [];
 
-    /* Globals */
-    var image_data;
-    var tags;
-    var rules_dict;
-
-    /* 
-        Attaches functions to their respective buttons
-    */
     window.onload = function () {
-      var generate = document.getElementById("generate");
-      var browse = document.getElementById("browse");
-      var capBut = document.getElementById("cap-but");
-      setUpDictionary();
-      generate.onclick = generateTags;
-      generate.style.display = "none";
-      browse.onchange = readSingleFile;
-      capBut.onclick = newCaption;
+        var generate = document.getElementById("gen");
+        generate.onclick = test;
+        document.getElementById("file_input").addEventListener('change', uploadText, false);
     };
 
-    function setUpDictionary() {
-      rules_dict = new Map();
-      rules_dict.set("<sentence>",["<verb> <nounp>", "<nounp>",
-      "<nounp> <join> <det> <noun>", "<verb> <preposition> <det> <nounp>"]);
-      rules_dict.set("<nounp>",["<det> <adjs> <noun>", "<adjs> <noun>"]);
-      rules_dict.set("<adjs>",["<adj>"]);
-      rules_dict.set("<adj>",[]);
-      rules_dict.set("<det>",["the"]);
-      rules_dict.set("<verb>",[]);
-      rules_dict.set("<noun>",[]);
-      rules_dict.set("<join>", ["and"])
-      rules_dict.set("<preposition>", ["with", "on"]);
-
-
-      var ajax = new XMLHttpRequest();
-      ajax.open("GET", "dicts/adjectives.txt", true);
-      ajax.onreadystatechange = function() {
-        var lines = this.responseText.split('\n');
-        for(var i = 0; i < lines.length; i++){
-          rules_dict.get("<adj>").push(lines[i]);
-        }
-      }
-
-      var ajax2 = new XMLHttpRequest();
-      ajax2.open("GET", "dicts/verbs.txt", true);
-      ajax2.onreadystatechange = function() {
-        var lines = this.responseText.split('\n');
-        for(var i = 0; i < lines.length; i++){
-          rules_dict.get("<verb>").push(lines[i]);
-        }
-      }
-      ajax.send();
-      ajax2.send();
+    function test() {
+      //var client = Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1");
+    var input = document.getElementById("input_text").value;
+    Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+      .algo("algo://nlp/AutoTag/1.0.0")
+      .pipe(input)
+      .then(function(output) {
+        getArticles(output.result);
+        document.getElementById("summary").innerHTML = output.result;
+      });
     }
 
-    function readSingleFile(e) {
-      document.getElementById("generate").style.display = "";
-      document.getElementById("results").style.display = "none";
-      document.getElementById("check").style.display = "";
-      var file = e.target.files[0];
-      if (!file) {
-        return;
-      }
-      var reader = new FileReader();
-      
-      reader.onload = function(e) {
-        var pic = document.getElementById("pic");
-        pic.src = reader.result;
-
-        var contents = reader.result;
-        displayContents(contents);
-      }
-      reader.readAsDataURL(file);
+function uploadText(event) {
+        console.log("uploading a file...");
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var contents = event.target.result;
+            document.getElementById("input_text").value = reader.result;
+        };
+        reader.onerror = function(event) {
+            console.error("File could not be read! Code " + event.target.error.code);
+        };
+        reader.readAsText(event.target.files[0]);
+  }
+    function uploadImage(event) {
+        var input = event.target.files[0];
+        console.log("reading image: " + input);
+        Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+           .algo("algo://ocr/RecognizeCharacters/0.2.2")
+           .pipe(input)
+           .then(function(output) {
+                console.log(output);
+           });
     }
+    document.getElementById("file_input").addEventListener('change', uploadText, false);
+    document.getElementById("image_input").addEventListener('change', uploadImage, false);
 
-    function displayContents(contents) {
-        var comma = contents.indexOf(',');
-        image_data = contents.substring(comma + 1, contents.length);
-    }
-
-    function generateTags() {
-      document.getElementById("generate").style.display = "none";
-      clearPrevious();  
-      document.getElementById("loading").style.display = "";
-      popsicle({
-          url: 'https://api.clarifai.com/v1/token/',
-          method: 'POST',
-          query: {
-              grant_type: 'client_credentials',
-              client_id: 'ckai4iAcjgNz-bCIPUDXJ7N_fy6zKAIyKMPnUAU9',
-              client_secret: 'ST3kXw9muiBEN-O1Hl9o8ya8LDtHY8MQhLwzNPq_'
-          }
-      }).then(function(response) {
-          return response.body.access_token;
-      }).then(function(token) {
-          return popsicle({
-            url: 'https://api.clarifai.com/v1/tag/',
-            method: 'POST',
-            body: {encoded_data: image_data},
-            headers: {
-              'Authorization' : 'Bearer ' + token
+  function addLinks(articles, tags, index, count, seen) {
+    var input = {"search": tags[index]};
+    Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+        .algo("algo://web/WikipediaParser/0.1.0")
+        .pipe(input)
+        .then(function(output) {
+          var j = 0;
+          for(var i = 0; i < count; i++) {
+            var name = output.result[j];
+            //var summary = "";
+            if(seen.indexOf(name) === -1 && name.indexOf("disambiguation") === -1) {
+              
+              console.log(name + "addding");
+              articles.push(name);
+              seen.push(name);
+            } else {
+              i -= 1;
             }
-          })
-      }).then(function(response) {
-          tags = response.body.results[0].result.tag.classes;
-          displayResults();
-      })
-    }
+            j++;
+          }
+        });
 
-    function displayResults() {
-      displayHashtags();
-      displayCaptions();
-      document.getElementById("loading").style.display = "none";
-    }
 
-    function displayHashtags() {
-      var panel = document.getElementById("list1");
+  }
 
+    function getArticles(tags) {
+      //clear();
+      var seen = [];
+      var articles = [];
+
+      console.log("hi");
+      addLinks(articles, tags, 0, 2, seen);
+      addLinks(articles, tags, 1, 2, seen);
+      addLinks(articles, tags, 2, 1, seen);
+      addLinks(articles, tags, 3, 1, seen);
+      console.log(articles);
+      genHTML(articles);
+      console.log("end");
+      
+       }
+
+
+    function genHTML(articles) {
+    console.log(articles);
+    var links = document.getElementById("links");
       var list = document.createElement("ul");
+      list.id = "linklist";
       list.className = "list-group";
 
-      for(var i = 0; i < tags.length; i++) {
-        var element = document.createElement("li");
-        element.innerHTML = "#" + tags[i].replace(" ", "");
-        element.className = "list-group-item";
-        list.appendChild(element);
+    for(var i = 0; i < articles.length; i++) {
+      console.log(i);
+      var name = articles[i];
+      var article = {"articleName": name};
+      Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+          .algo("algo://web/WikipediaParser/0.1.0")
+          .pipe(article)
+          .then(function(finish) {
+            //console.log(finish.result.summary);
+            var summary = finish.result.summary;
+            console.log(summary);
+            var paragraph = document.createElement("p");
+            paragraph.innerHTML = summary;
+            var element = document.createElement("li");
+            var wikiLink = "https://en.wikipedia.org/wiki/" + name.replace(" ", "_");
+            var newLink = document.createElement("a");
+            newLink.href = wikiLink;
+            newLink.target = "_blank";
+            element.appendChild(newLink);
+            newLink.innerHTML = name;
+            element.className = "list-group-item";
+            element.appendChild(paragraph);
+            list.appendChild(element);
+          });
+
       }
 
-      panel.appendChild(list);
+      document.getElementById("col1").appendChild(list);
+  }
 
-      document.getElementById("results").style.display = "";
-
-      var height = $("#pic").height();
-      var subheight = $(".panel-heading").outerHeight();
-      list.style.maxHeight = height - subheight + "px";
-      list.style.overflowY = "scroll";
-    }
-
-    function displayCaptions() {
-      for(var i = 0; i < tags.length; i++) {
-        rules_dict.get("<noun>").push(tags[i]);
-      }
-
-      var element = document.createElement("h2");
-      document.getElementById("list2").appendChild(element);
-      newCaption();
-    }
-
-    function newCaption() {
-      var sentence = getRandom("<sentence>");
-      var s1 = sentence.substring(0,1).toUpperCase();
-      var nameCapitalized = s1 + sentence.substring(1);
-      document.getElementById("list2").firstChild.innerHTML = nameCapitalized;
-    }
-
-    function clearPrevious() {
-      document.getElementById("list1").innerHTML = "";
-      document.getElementById("list2").innerHTML = "";
-      document.getElementById("check").style.display = "none";
-      rules_dict.set("<noun>", []);
-    }
-
-
-    //Grammar solver code
-    function isNonTerminal(nonTerminal) {
-      return (rules_dict.get(nonTerminal));
-    }
-
-    function getRandom(times, symbol) {
-      var results = [];
-
-      for(var i = 0; i < times; i++) {
-        results.push(getRandom(symbol).trim());
-      }
-      return results;
-    }
-
-    function getRandom(symbol) {
-      if(!isNonTerminal(symbol)) {
-        return symbol + " ";
-      } else {
-        var arr = rules_dict.get(symbol);
-        var rule = arr[Math.floor(Math.random() * arr.length)];
-        var rules = rule.match(/\S+/g);
-        var result = "";
-        for(var i = 0; i < rules.length; i++) {
-          result += getRandom(rules[i]);
+      function clear() {
+        var col = document.getElementById("col1");
+        console.log(document.getElementById("linklist"));
+        var list = document.getElementById("linklist");
+     //   articles = [];
+        if(list !== null) {
+          col.removeChild(list);
         }
+        document.getElementById("summary").innerHTML = "";
       }
+  
 
-      return result;
-    }
-
-})();
-
+}());
