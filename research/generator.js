@@ -6,7 +6,7 @@
         generate.onclick = test;
         document.getElementById("file_input").addEventListener('change', uploadText, false);
         document.getElementById("file_input").addEventListener('change', uploadText, false);
-        document.getElementById("image_input").addEventListener('change', uploadImage, false);
+   //     document.getElementById("image_input").addEventListener('change', uploadImage, false);
     };
 
     function test() {
@@ -73,6 +73,16 @@
                 element.appendChild(newLink);
                 newLink.innerHTML = output.result[j];
                 element.className = "list-group-item";
+                var par = document.createElement("p");
+
+                var inp = {"articleName": output.result[j]};
+                Algorithmia.client("sim1xkhR27Dzh5uFbgL17cFx0NC1")
+                .algo("algo://web/WikipediaParser/0.1.0")
+                .pipe(inp)
+                .then(function(resultz) {
+                  par.innerHTML = resultz.result.summary;
+                });
+                element.appendChild(par);
                 list.appendChild(element);
                 seen.push(output.result[j]);
             } else {
