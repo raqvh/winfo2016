@@ -4,7 +4,7 @@
     var titles = [];
     var sums = [];
     var callsLeft = null;
-    var sumsCallsLeft = null;
+    var sumsCallsLeft = 0;
 
     window.onload = function() {
         var generate = document.getElementById("gen");
@@ -97,6 +97,7 @@
 
         console.log("hi");
         callsLeft = 4;
+       // sumsCallsLeft = 6;
         addLinks(tags, list, 0, 2, seen, getSummaries);
         addLinks(tags, list, 1, 2, seen, getSummaries);
         addLinks(tags, list, 2, 1, seen, getSummaries);
@@ -107,19 +108,20 @@
     }
 
     function createSummariesInPage() {
-        alert("HELLO");
-        console.log(sums);
+      //  alert("HELLO");
+        //console.log(sums + " length " + sums.length);
         var list = document.createElement("ul");
-        for(var j = 0; j < 6; j++) {
+        for(var j = 0; j < sums.length; j++) {
             var element = document.createElement("li");
             var wikiLink = "https://en.wikipedia.org/wiki/" + titles[j].replace(" ", "_");
             var newLink = document.createElement("a");
             newLink.href = wikiLink;
             newLink.target = "_blank";
             element.appendChild(newLink);
-            newLink.innerHTML = sums[j];
+            newLink.innerHTML = titles[j];
             element.className = "list-group-item";
             var par = document.createElement("p");
+            par.innerHTML = sums[j];
             element.appendChild(par);
             list.appendChild(element);
         }
@@ -129,7 +131,7 @@
 
     function getSummaries() {
         console.log(titles);
-        sumsCallsLeft = titles.length;
+        //sumsCallsLeft = titles.length;
         // console.log("length of titles: " + titles.length);
         for(var i = 0; i < titles.length; i++) {
             // console.log("Title number: " + i);
@@ -142,12 +144,17 @@
                 .pipe(inp)
                 .then(function(resultz) {
                     console.log(resultz);
+                    console.log(sumsCallsLeft);
                     // console.log("sum API call: " + resultz.result.summary);
-                    sums.push(resultz.results.summary);
-                    sumsCallsLeft--;
+                    console.log(i);
+                    sums.push(resultz.result.summary);
+                    sumsCallsLeft = sumsCallsLeft + 1;
                     // console.log("sums: " + sumsCallsLeft);
-                    if(sumsCallsLeft <= 0) {
+
+                    if(sumsCallsLeft >= 4) {
+                        sumsCallsLeft = -100000;
                         createSummariesInPage();
+
                     }
                 });
         }
@@ -157,7 +164,7 @@
         var col = document.getElementById("col1");
         console.log(document.getElementById("linklist"));
         var list = document.getElementById("linklist");
-        if (list !== null) {
+        if (list != null) {
             col.removeChild(list);
         }
         document.getElementById("summary").innerHTML = "";
